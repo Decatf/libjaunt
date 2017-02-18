@@ -73,7 +73,7 @@ void sig_handler(int signal, siginfo_t *info, void *context) {
 	struct aux_sigframe *aux = (struct aux_sigframe*)&((ucontext_t*)context)->uc_regspace;
 	struct vfp_sigframe *vfp = (struct vfp_sigframe*)aux;
 
-	if (signal != SIGILL) return;
+	if (signal != SIGILL && info->si_code != ILL_ILLOPC) return;
 
 	pthread_mutex_lock(&lock);
 
