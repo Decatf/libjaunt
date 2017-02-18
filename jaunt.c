@@ -90,9 +90,6 @@ void sig_handler(int signal, siginfo_t *info, void *context) {
 		abort();
 	}
 
-	int thumb_mode = (uc_mcontext->arm_cpsr>>5) & 1;
-	uint32_t insn = *(uint32_t*)(uc_mcontext->arm_pc+2);
-
 	exec(
 		(uint32_t*)&uc_mcontext->arm_r0,
 		(uint64_t*)vfp->ufp.fpregs,
