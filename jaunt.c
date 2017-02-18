@@ -41,8 +41,6 @@ void (*exec)(
     uint32_t *cpsr, uint32_t *fpscr,
     uint32_t *fpexc,
     int dump_reg);
-void (*reset_cpu)(void);
-void (*on_fork)(void);
 
 void init_arm_tcg_lib(void)
 {
@@ -53,8 +51,6 @@ void init_arm_tcg_lib(void)
 	if (handle) {
 		init_tcg_arm = dlsym(handle, "init_tcg_arm");
 		exec = dlsym(handle, "exec");
-		reset_cpu = dlsym(handle, "reset_cpu");
-		on_fork = dlsym(handle, "on_fork");
 
 		init_tcg_arm();
 
@@ -107,12 +103,7 @@ struct sigaction old_sa, new_sa = {
 
 static void prepare() { }
 static void parent() { }
-static void child()
-{
-	if (initialized) {
-		on_fork();
-	}
-}
+static void child() { }
 
 void __attribute__ ((constructor)) init(void) {
 	pthread_mutex_init(&lock, NULL);
