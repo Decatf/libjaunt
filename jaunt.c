@@ -30,8 +30,6 @@
 
 #include "jaunt.h"
 
-pthread_mutex_t lock;
-
 void* libtcg_arm_handle = NULL;
 static int initialized = 0;
 
@@ -76,8 +74,6 @@ void sig_handler(int signal, siginfo_t *info, void *context) {
 
 	if (signal != SIGILL && info->si_code != ILL_ILLOPC) return;
 
-	pthread_mutex_lock(&lock);
-
 	/* One time init*/
 	init_arm_tcg_lib();
 
@@ -98,8 +94,6 @@ void sig_handler(int signal, siginfo_t *info, void *context) {
 		(uint32_t*)&vfp->ufp.fpscr,
 		(uint32_t*)&vfp->ufp_exc.fpexc,
 		0);
-
-	pthread_mutex_unlock(&lock);
 }
 
 struct sigaction old_sa, new_sa = {
@@ -111,12 +105,10 @@ static void parent() { }
 static void child() { }
 
 void __attribute__ ((constructor)) init(void) {
-	pthread_mutex_init(&lock, NULL);
 	pthread_atfork(&prepare, &parent, &child);
 	sigaction(SIGILL, &new_sa, &old_sa);
 }
 
 void __attribute__ ((destructor)) finish(void) {
 	sigaction(SIGILL, &old_sa, &new_sa);
-	pthread_mutex_destroy(&lock);
 }
