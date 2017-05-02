@@ -52,6 +52,11 @@ void init_arm_tcg_lib(void)
 		init_tcg_arm = dlsym(handle, "init_tcg_arm");
 		exec = dlsym(handle, "exec");
 
+		if (init_tcg_arm == NULL || exec == NULL) {
+			initialized = 0;
+			return;
+		}
+
 		init_tcg_arm();
 
 		libtcg_arm_handle = handle;
