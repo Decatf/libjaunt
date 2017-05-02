@@ -100,12 +100,7 @@ struct sigaction old_sa, new_sa = {
 	.sa_flags     = SA_SIGINFO,
 	.sa_sigaction = &sig_handler };
 
-static void prepare() { }
-static void parent() { }
-static void child() { }
-
 void __attribute__ ((constructor)) init(void) {
-	pthread_atfork(&prepare, &parent, &child);
 	sigaction(SIGILL, &new_sa, &old_sa);
 }
 
