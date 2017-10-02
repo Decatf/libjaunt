@@ -33,6 +33,8 @@
 void* libtcg_arm_handle = NULL;
 static int initialized = 0;
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int (*init_tcg_arm)(void);
 void (*exec)(
 	uint32_t *regs, uint64_t* fpregs,
@@ -45,6 +47,8 @@ void init_arm_tcg_lib(void)
 	if (likely(libtcg_arm_handle != NULL))
 		return;
 
+	pthread_mutex_lock(&mutex);
+
 	void *handle = dlopen("libtcg_arm.so", RTLD_NOW | RTLD_LOCAL);
 	if (handle) {
 		init_tcg_arm = dlsym(handle, "init_tcg_arm");
@@ -52,6 +56,7 @@ void init_arm_tcg_lib(void)
 
 		if (init_tcg_arm == NULL || exec == NULL) {
 			initialized = 0;
+			pthread_mutex_unlock(&mutex);
 			return;
 		}
 
@@ -60,6 +65,8 @@ void init_arm_tcg_lib(void)
 		libtcg_arm_handle = handle;
 		initialized = 1;
 	}
+
+	pthread_mutex_unlock(&mutex);
 }
 
 inline int check_vfp_magic(struct vfp_sigframe *vfp) {
