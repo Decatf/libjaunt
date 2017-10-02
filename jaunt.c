@@ -85,12 +85,12 @@ void sig_handler(int signal, siginfo_t *info, void *context) {
 	init_arm_tcg_lib();
 
 	if (unlikely(!initialized)) {
-		printf("ERROR: ARM emulation unit not initialized.\n");
+		ALOGE("ARM emulation unit not initialized.\n");
 		abort();
 	}
 
 	if (unlikely(!check_vfp_magic(vfp))) {
-		printf("ERROR: VFP Magic check failed. magic = 0x%lX\n", vfp->magic);
+		ALOGE("VFP Magic check failed. magic = 0x%lX\n", vfp->magic);
 		abort();
 	}
 
