@@ -44,26 +44,36 @@ void (*exec)(
 
 void init_arm_tcg_lib(void)
 {
+	int res;
+
 	if (likely(libtcg_arm_handle != NULL))
 		return;
 
 	pthread_mutex_lock(&mutex);
 
 	void *handle = dlopen("libtcg_arm.so", RTLD_NOW | RTLD_LOCAL);
-	if (handle) {
-		init_tcg_arm = dlsym(handle, "init_tcg_arm");
-		exec = dlsym(handle, "exec");
+	if (!handle) {
+		ALOGE("Error loading libtcg_arm.so: %s", dlerror());
+		pthread_mutex_unlock(&mutex);
+		return;
+	}
 
-		if (init_tcg_arm == NULL || exec == NULL) {
-			initialized = 0;
-			pthread_mutex_unlock(&mutex);
-			return;
-		}
+	init_tcg_arm = dlsym(handle, "init_tcg_arm");
+	exec = dlsym(handle, "exec");
 
-		init_tcg_arm();
+	if (init_tcg_arm == NULL || exec == NULL) {
+		ALOGE("Error loading symbols from libtcg_arm.so");
+		pthread_mutex_unlock(&mutex);
+		return;
+	}
 
+	res = init_tcg_arm();
+
+	if (!res) {
 		libtcg_arm_handle = handle;
 		initialized = 1;
+	} else {
+		ALOGE("init_tcg_arm() returned %d", res);
 	}
 
 	pthread_mutex_unlock(&mutex);
